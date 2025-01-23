@@ -2,8 +2,12 @@ This repository contains code for functions and examples to make computations re
 Each directory contains a readme file explaining further details concerning that directory.
 
 The directory "Automorphisms" contains codes related to the computation of the automorphisms of modular curves.
+The codes in this directory are related with the paper:
+> "Computing automorphisms of modular curves", Lido Guido, Mercuri Pietro, preprint.
 
 The directory "Many_points_modular_curves" contains codes related to the computation of the number of points of modular curves over finite fields.
+The codes in this directory are related with the paper:
+> "Two maximal curves over F_{11^5} and a modular isogeny", Dose Valerio, Lido Guido, Mercuri Pietro, Stirpe Claudio, preprint.
 
 The directory "Nonsplit_Cartan_curves" contains codes related to the computation of explicit equations of nonsplit Cartan modular curves of prime level.
 The codes in this directory are related with the paper:
