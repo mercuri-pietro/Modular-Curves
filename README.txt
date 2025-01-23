@@ -1,4 +1,4 @@
-This repositry contains code for functions and examples to make computations related to modular curves.
+This repository contains code for functions and examples to make computations related to modular curves.
 Each directory contains a readme file explaining further details concerning that directory.
 
 The directory "Automorphisms" contains codes related to the computation of the automorphisms of modular curves.
