@@ -22,10 +22,9 @@ auttest:=5;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
-// load modular automorphisms code
 // setup
 
-// use modular automorphisms code ("Modular Automorphisms (public version).txt")
+// load modular automorphisms code ("Automorphisms/find_modular_automorphisms.txt")
 MAut:=ModularAUT(G,N);
 cardMAut:=#MAut;
 
