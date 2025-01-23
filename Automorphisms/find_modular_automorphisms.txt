@@ -39,8 +39,7 @@ lift_mat_with_det:=function(a,n)
   b:=Matrix(ZZ,2,2,[a[1,1],a[1,2],a[2,1],a[2,2]]);
   i1:=b[1,1];
   i2:=b[2,1];
-  determ:=Determinant(b);
-  DD:=ZZ!(determ mod n);
+  DD:=ZZ!(Determinant(b) mod n);
   // make the first column not multiple of anything
   while not IsCoprime(i1,i2) do
     i2:=i2+n;
@@ -50,6 +49,7 @@ lift_mat_with_det:=function(a,n)
   end while;
   // use Bezout
   b:=Matrix(ZZ,2,2,[i1,b[1,2],i2,b[2,2]]);
+  determ:=Determinant(b);
   k1,k2,k3:=XGCD(i1,i2);
   b[2,2]:=b[2,2]+(DD-determ)*k2;
   b[1,2]:=b[1,2]-(DD-determ)*k3;
