@@ -1,4 +1,4 @@
-The code in the file "Nonsplit_Cartan.txt" is based on the paper:
+The code in files in this directory is based on the paper:
 > "Modular forms invariant under non-split Cartan subgroups", Mercuri Pietro, Schoof René, Mathematics of Computation, Vol. 89, no. 324, 2020, pp. 1969–1991, MR4081925, DOI 10.1090/mcom/3503; free online version at https://arxiv.org/pdf/1805.06873.pdf.
 
 In the following is explained the structure and the main output of the file "Nonsplit_Cartan.txt".
