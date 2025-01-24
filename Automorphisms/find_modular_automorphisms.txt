@@ -2,7 +2,7 @@
 
 // The main funcion is ModularAUT.
 // It computes the group G of modular automorphisms of the modular curve X_H for H a subgroup of GL_2(Z/nZ): it finds a sequence of matrices representing all elements in G and it gives a subgroup of the symmetric group on #G elements isomorphic to G.
-// Tested last time on 23/01/2025 using the online version of Magma. The version available at that date was Magma V2.28-15.
+// Tested last time on 24/01/2025 using the online version of Magma. The version available at that date was Magma V2.28-15.
 
 
 //////////////////////////////////////////////
