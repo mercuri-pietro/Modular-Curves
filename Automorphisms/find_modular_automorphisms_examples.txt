@@ -1,1 +1,214 @@
-prova
+
+
+// The notation for the groups and their generators are taken from the database LMFDB.
+// The output is obtained on 24/01/2025 using the online version of Magma. The version available at that date was Magma V2.28-15.
+
+
+//////////////////////////////////////////////
+////////// EXAMPLE 1
+//////////////////////////////////////////////
+
+
+// level
+n:=25;
+
+
+// generators of the group H = B(25)
+Htmp := [
+ Matrix(2,2,[12,23,0,6]),
+ Matrix(2,2,[17,1,0,12])
+];
+
+
+H:=sub<GL(2,Integers(n))|Htmp>;
+t0:=Cputime();
+MAut,gr_str:=ModularAUT(H,n);
+print "The cpu time used is",Cputime(t0);
+MAut:=MAut[1];
+gr_str:=gr_str[1];
+print "The cardinality of the modular automorphism group is",#MAut;
+print "The modular automorphism group is isomorphic to the group", GroupName(gr_str);
+print "The representatives for the element of the modular automorphism group are the following:";
+MAut;
+
+
+// Output:
+/*
+The cpu time used is 1.690
+The cardinality of the modular automorphism group is 2
+The modular automorphism group is isomorphic to the group C2
+The representatives for the element of the modular automorphism group are the
+following:
+[
+    [1 0]
+    [0 1],
+
+    [ 0 -1]
+    [25  0]
+]
+*/
+
+
+
+//////////////////////////////////////////////
+////////// EXAMPLE 2
+//////////////////////////////////////////////
+
+
+// level
+n:=25;
+
+// generators of the group H (a subgroup of B(25))
+s:=Integers()!Sqrt(n);
+Htmp := [
+ Matrix(2,2,[1,1,0,1]),
+ Matrix(2,2,[1+s,s,-s,1-s]),
+ Matrix(2,2,[-1,0,0,-1])
+];
+
+
+H:=sub<GL(2,Integers(n))|Htmp>;
+t0:=Cputime();
+MAut,gr_str:=ModularAUT(H,n);
+print "The cpu time used is",Cputime(t0);
+MAut:=MAut[1];
+gr_str:=gr_str[1];
+print "The cardinality of the modular automorphism group is",#MAut;
+print "The modular automorphism group is isomorphic to the group", GroupName(gr_str);
+print "The representatives for the element of the modular automorphism group are the following:";
+MAut;
+
+
+// Output:
+/*
+The cpu time used is 7.280
+The cardinality of the modular automorphism group is 4
+The modular automorphism group is isomorphic to the group C2^2
+The representatives for the element of the modular automorphism group are the
+following:
+[
+    [1 0]
+    [0 1],
+
+    [  2  25]
+    [ 25 313],
+
+    [ 0 -1]
+    [ 5  0],
+
+    [ 25  23]
+    [190 175]
+]
+*/
+
+
+// If reduced_elements option is false the output is the following:
+/*
+The cpu time used is 1.600
+The cardinality of the modular automorphism group is 4
+The modular automorphism group is isomorphic to the group C2^2
+The representatives for the element of the modular automorphism group are the
+following:
+[
+    [1 0]
+    [0 1],
+
+    [  2  25]
+    [ 25 313],
+
+    [  125   149]
+    [19505 23250],
+
+    [ 487875  581548]
+    [6108190 7280975]
+]
+*/
+
+//////////////////////////////////////////////
+////////// EXAMPLE 3
+//////////////////////////////////////////////
+
+
+// level
+n:=243;
+
+
+// generators of the group H = C_ns^+(243)
+Htmp := [
+ Matrix(2,2,[151,241,4,153]),
+ Matrix(2,2,[166,35,147,77])
+];
+
+
+H:=sub<GL(2,Integers(n))|Htmp>;
+t0:=Cputime();
+MAut,gr_str:=ModularAUT(H,n);
+print "The cpu time used is",Cputime(t0);
+MAut:=MAut[1];
+gr_str:=gr_str[1];
+print "The cardinality of the modular automorphism group is",#MAut;
+print "The modular automorphism group is isomorphic to the group", GroupName(gr_str);
+print "The representatives for the element of the modular automorphism group are the following:";
+MAut;
+
+
+// Output:
+/*
+The cpu time used is 2.310
+The cardinality of the modular automorphism group is 1
+The modular automorphism group is isomorphic to the group C1
+The representatives for the element of the modular automorphism group are the
+following:
+[
+    [1 0]
+    [0 1]
+]
+*/
+
+
+
+//////////////////////////////////////////////
+////////// EXAMPLE 4
+//////////////////////////////////////////////
+
+
+// level
+n:=35;
+
+
+// generators of the group H = C_s^+(35)
+Htmp := [
+ Matrix(2,2,[0,6,6,0]),
+ Matrix(2,2,[0,22,31,0]),
+ Matrix(2,2,[26,0,0,16])
+];
+
+
+H:=sub<GL(2,Integers(n))|Htmp>;
+t0:=Cputime();
+MAut,gr_str:=ModularAUT(H,n);
+print "The cpu time used is",Cputime(t0);
+MAut:=MAut[1];
+gr_str:=gr_str[1];
+print "The cardinality of the modular automorphism group is",#MAut;
+print "The modular automorphism group is isomorphic to the group", GroupName(gr_str);
+print "The representatives for the element of the modular automorphism group are the following:";
+MAut;
+
+
+// Output:
+/*
+The cpu time used is 0.030
+The cardinality of the modular automorphism group is 2
+The modular automorphism group is isomorphic to the group C2
+The representatives for the element of the modular automorphism group are the
+following:
+[
+    [1 0]
+    [0 1],
+
+    [    65 -24346]
+    [    56 -20975]
+]
+*/
+
