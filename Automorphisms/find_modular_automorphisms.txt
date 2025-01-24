@@ -37,23 +37,75 @@ end function;
 lift_mat_with_det:=function(a,n)
   ZZ:=Integers();
   b:=Matrix(ZZ,2,2,[a[1,1],a[1,2],a[2,1],a[2,2]]);
-  i1:=b[1,1];
-  i2:=b[2,1];
-  DD:=ZZ!(Determinant(b) mod n);
-  // make the first column not multiple of anything
-  while not IsCoprime(i1,i2) do
-    i2:=i2+n;
-    if not IsCoprime(i1,i2) then
-      i1:=i1+n;
+  if not(GCD([b[1,1],b[1,2],b[2,1],b[2,2],n]) eq 1) then  
+    return 0;
+  else
+    if (b[1,1] eq 0) and (b[2,1] eq 0) then
+      b[2,1]:=b[2,1]+n;
+    elif (b[1,1] eq 0) and (b[1,2] eq 0) then
+      b[1,2]:=b[1,2]+n;
     end if;
-  end while;
-  // use Bezout
-  b:=Matrix(ZZ,2,2,[i1,b[1,2],i2,b[2,2]]);
-  determ:=Determinant(b);
-  k1,k2,k3:=XGCD(i1,i2);
-  b[2,2]:=b[2,2]+(DD-determ)*k2;
-  b[1,2]:=b[1,2]-(DD-determ)*k3;
-  return b;
+    if (GCD(b[1,1],b[2,1]) eq 1) or not(n mod GCD(b[1,1],b[2,1]) eq 0) then
+      cc:=1;
+      i1:=b[1,1];
+      i2:=b[2,1];
+    elif (GCD(b[1,1],b[1,2]) eq 1) or not(n mod GCD(b[1,1],b[1,2]) eq 0) then
+      cc:=2;
+      i1:=b[1,1];
+      i2:=b[1,2];
+    elif (GCD(b[2,1],b[2,2]) eq 1) or not(n mod GCD(b[2,1],b[2,2]) eq 0) then
+      cc:=3;
+      i1:=b[2,2];
+      i2:=b[2,1];
+    elif (GCD(b[1,2],b[2,2]) eq 1) or not(n mod GCD(b[1,2],b[2,2]) eq 0) then
+      cc:=4;
+      i1:=b[2,2];
+      i2:=b[1,2];
+    else 
+      return 0;
+    end if;
+    DD:=ZZ!(Determinant(b) mod n);
+    if DD eq 0 then
+      DD:=DD+n;
+    end if;
+    // make the first two elements are not coprime
+    while not IsCoprime(i1,i2) do
+      i2:=i2+n;
+      if not IsCoprime(i1,i2) then
+        i1:=i1+n;
+      end if;
+    end while;
+    // use Bezout
+    if cc eq 1 then
+      b:=Matrix(ZZ,2,2,[i1,b[1,2],i2,b[2,2]]);
+      determ:=Determinant(b);
+      k1,k2,k3:=XGCD(i1,i2);
+      b[2,2]:=b[2,2]+(DD-determ)*k2;
+      b[1,2]:=b[1,2]-(DD-determ)*k3;
+      return b;
+    elif cc eq 2 then
+      b:=Matrix(ZZ,2,2,[i1,i2,b[2,1],b[2,2]]);
+      determ:=Determinant(b);
+      k1,k2,k3:=XGCD(i1,i2);
+      b[2,2]:=b[2,2]+(DD-determ)*k2;
+      b[2,1]:=b[2,1]-(DD-determ)*k3;
+      return b;
+    elif cc eq 3 then
+      b:=Matrix(ZZ,2,2,[b[1,1],b[1,2],i2,i1]);
+      determ:=Determinant(b);
+      k1,k2,k3:=XGCD(i1,i2);
+      b[1,1]:=b[1,1]+(DD-determ)*k2;
+      b[1,2]:=b[1,2]-(DD-determ)*k3;
+      return b;
+    elif cc eq 4 then
+      b:=Matrix(ZZ,2,2,[b[1,1],i2,b[2,1],i1]);
+      determ:=Determinant(b);
+      k1,k2,k3:=XGCD(i1,i2);
+      b[1,1]:=b[1,1]+(DD-determ)*k2;
+      b[2,1]:=b[2,1]-(DD-determ)*k3;
+      return b;
+    end if;
+  end if;
 end function;
 
 
