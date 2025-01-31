@@ -45,19 +45,19 @@ lift_mat_with_det:=function(a,n)
     elif (b[1,1] eq 0) and (b[1,2] eq 0) then
       b[1,2]:=b[1,2]+n;
     end if;
-    if (GCD(b[1,1],b[2,1]) eq 1) or not(n mod GCD(b[1,1],b[2,1]) eq 0) then
+    if (GCD(b[1,1],b[2,1]) eq 1) or ( (b[1,1] ne 0) and (b[2,1] ne 0) and (n mod GCD(b[1,1],b[2,1]) ne 0) ) then
       cc:=1;
       i1:=b[1,1];
       i2:=b[2,1];
-    elif (GCD(b[1,1],b[1,2]) eq 1) or not(n mod GCD(b[1,1],b[1,2]) eq 0) then
+    elif (GCD(b[1,1],b[1,2]) eq 1) or ( (b[1,1] ne 0) and (b[1,2] ne 0) and (n mod GCD(b[1,1],b[1,2]) ne 0) ) then
       cc:=2;
       i1:=b[1,1];
       i2:=b[1,2];
-    elif (GCD(b[2,1],b[2,2]) eq 1) or not(n mod GCD(b[2,1],b[2,2]) eq 0) then
+    elif (GCD(b[2,1],b[2,2]) eq 1) or ( (b[2,1] ne 0) and (b[2,2] ne 0) and (n mod GCD(b[2,1],b[2,2]) ne 0) ) then
       cc:=3;
       i1:=b[2,2];
       i2:=b[2,1];
-    elif (GCD(b[1,2],b[2,2]) eq 1) or not(n mod GCD(b[1,2],b[2,2]) eq 0) then
+    elif (GCD(b[1,2],b[2,2]) eq 1) or ( (b[1,2] ne 0) and (b[2,2] ne 0) and (n mod GCD(b[1,2],b[2,2]) ne 0) ) then
       cc:=4;
       i1:=b[2,2];
       i2:=b[1,2];
