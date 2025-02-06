@@ -175,296 +175,296 @@ stable_lines_pk:=function(H,p)
   */
   np:=Valuation(Modulus(BaseRing(H)),p);
   gens:=SetToSequence(Generators(H));
-	bad_case:=false;
-	c:=0;
-	Zpk_old:=Integers(1);
-	M_old:=IdentityMatrix(Zpk_old,2);
-	M:=M_old;
+  bad_case:=false;
+  c:=0;
+  Zpk_old:=Integers(1);
+  M_old:=IdentityMatrix(Zpk_old,2);
+  M:=M_old;
   for kt:=1 to np do
     Zpk:=Integers(p^kt);
     gens_pk:=[];
-		for x in gens do 
-			temp:=ChangeRing(x,Zpk);
-			if not IsScalar(temp) then
-				Append(~gens_pk,temp);
-			end if;
-		end for;
-		// check if H mod p^kt only containes scalar matrices: in this case every line is invariant
-		if #gens_pk eq 0 then
-			answer_temp:="ALL";
-			lams_test:=false;
-			c:=c+1;
-			if kt eq 1 then
+    for x in gens do 
+      temp:=ChangeRing(x,Zpk);
+      if not IsScalar(temp) then
+        Append(~gens_pk,temp);
+      end if;
+    end for;
+    // check if H mod p^kt only containes scalar matrices: in this case every line is invariant
+    if #gens_pk eq 0 then
+      answer_temp:="ALL";
+      lams_test:=false;
+      c:=c+1;
+      if kt eq 1 then
         two_evs:=false;
-			end if;
-		else
-			if kt eq 1 then
+      end if;
+    else
+      if kt eq 1 then
         two_evs:=false;
-			  for gen in gens_pk do
-				  lams_temp:=Eigenvalues(gen);
-					if #lams_temp eq 0 then
-					  answer:=[**];
-						k:=kt;
-						break kt;
-					elif #lams_temp eq 2 then
-					  M:=gen;
+        for gen in gens_pk do
+          lams_temp:=Eigenvalues(gen);
+          if #lams_temp eq 0 then
+            answer:=[**];
+            k:=kt;
+            break kt;
+          elif #lams_temp eq 2 then
+            M:=gen;
             lams:=lams_temp;
-					  two_evs:=true;
-					elif not two_evs then
-					  M:=gen;
+            two_evs:=true;
+          elif not two_evs then
+            M:=gen;
             lams:=lams_temp;
-					end if;
-				end for;
-				lams_test:=true;
-				// look for the lines that are stable by the chosen generator
-				possible_lines:=[];
-				for lam in lams do
-					Append(~possible_lines,Eigenspace(Transpose(M),lam[1]));
-				end for;
-				// check whether the possible lines are stable for all H
-				answer_temp:=[**];
-				common_stable_lines:=false;
-				for line in possible_lines do
-					flag:=true;
-					v:=Basis(line)[1];
-					for N in gens_pk do
-						w:=v*Transpose(N);
-						if not w in line then
-							flag:=false;
-							break N;
-						end if;
-					end for;
-					if flag then
-						Append(~answer_temp,v);
-						common_stable_lines:=true;
-					end if;
-				end for;
-				if not common_stable_lines then
-					answer:=[**];
-					k:=kt;
-					break kt;
-				elif #answer_temp ge 2 then
-				  c:=c+1;
-				end if;
-			else // kt gt 1
-				if lams_test then
-				  for gg in gens_pk do
-					  if ChangeRing(gg,Zpk_old) eq M_old then
-				      M:=gg;
-							break gg;
-						end if;
-					end for;
-					lams_temp:=[];
-					if #lams eq 2 then
-					  // lift eigenvalues
-					  polM:=CharacteristicPolynomial(M);
-						for lam in lams do
-						  if kt eq 2 then
-							  lam_temp:=Zpk!(Integers()!(lam[1]));
-							else
-							  lam_temp:=Zpk!(Integers()!(lam));
-							end if;
-							Append(~lams_temp,lam_temp-Evaluate(polM,lam_temp)/Evaluate(Derivative(polM),lam_temp));
-						end for;
-						// find eigenvectors
-						possible_lines:=[];
-						for lam in lams_temp do
-						  ker_temp:=Kernel(Transpose(Matrix(Zpk,2,2,[M[1,1]-lam,M[1,2],M[2,1],M[2,2]-lam])));
-						  if Dimension(ker_temp) gt 0 then
-							  Append(~possible_lines,ker_temp);
-							end if;
-						end for;
-						lams:=lams_temp;
-					else // #lams eq 1
-						// find eigenvector
-						possible_lines:=[];
-						v_old:=answer[1];
-						VV:=RSpace(Zpk,2);
-						for x1:=0 to p-1 do
-						  v1:=Integers()!(v_old[1])+x1*p^(kt-1);
-							for x2:=0 to p-1 do
-						    v2:=Integers()!(v_old[2])+x2*p^(kt-1);
-								v_temp:=VV![v1,v2];
-								SS:=sub<VV|[v_temp]>;
-								w_temp:=v_temp*Transpose(M);
-								if w_temp in SS then
-								  Append(~possible_lines,SS);
-									break x1;
-								end if;
-							end for;
-						end for;
-					end if;
-					if #possible_lines eq 0 then
-					  break kt;
-					end if;
-					// check whether the possible lines are stable for all H
-					answer_temp:=[**];
-				  common_stable_lines:=false;
-					for line in possible_lines do
-						flag:=true;
-						v:=Basis(line)[1];
-						for N in gens_pk do
-							w:=v*Transpose(N);
-							if not w in line then
-								flag:=false;
-								break N;
-							end if;
-						end for;
-						if flag then
-							Append(~answer_temp,v);
-						  common_stable_lines:=true;
-						end if;
-					end for;
-					if not common_stable_lines then
-						break kt;
-					elif #answer_temp ge 2 then
-					  c:=c+1;
-					end if;
-				elif bad_case then
-				  // find eigenvectors
-				  for gg in gens_pk do
-					  if ChangeRing(gg,Zpk_old) eq M_old then
-				      M:=gg;
-							break gg;
-						end if;
-					end for;
-					possible_lines:=[];
-					VV:=RSpace(Zpk,2);
-					for vv in answer do
-						v_old:=vv;
-						for x1:=0 to p-1 do
-							v1:=Integers()!(v_old[1])+x1*p^(kt-1);
-							for x2:=0 to p-1 do
-								v2:=Integers()!(v_old[2])+x2*p^(kt-1);
-								v_temp:=VV![v1,v2];
-								SS:=sub<VV|[v_temp]>;
-								w_temp:=v_temp*Transpose(M);
-								if w_temp in SS then
-									Append(~possible_lines,SS);
-									break x1;
-								end if;
-							end for;
-						end for;
-					end for;
-					if #possible_lines eq 0 then
-					  break kt;
-					end if;
-					// check whether the possible lines are stable for all H
-					answer_temp:=[**];
-				  common_stable_lines:=false;
-					for line in possible_lines do
-						flag:=true;
-						v:=Basis(line)[1];
-						for N in gens_pk do
-							w:=v*Transpose(N);
-							if not w in line then
-								flag:=false;
-								break N;
-							end if;
-						end for;
-						if flag then
-							Append(~answer_temp,v);
-						  common_stable_lines:=true;
-						end if;
-					end for;
-					if not common_stable_lines then
-						break kt;
-					elif #answer_temp ge 2 then
-					  c:=c+1;
-					end if;
-				else // not lams_test and not bad_case
-				  // check for a diagonal generator
-				  diag_test:=false;
-				  for gen in gens_pk do
-						M:=gen;
-					  if IsDiagonal(M) then
-							diag_test:=true;
-							break gen;
-						end if;
-					end for;
-					if diag_test then
-					  VV:=RSpace(Zpk,2);
-						v_temp:=VV![1,0];
-						SS1:=sub<VV|[v_temp]>;
-						v_temp:=VV![0,1];
-						SS2:=sub<VV|[v_temp]>;
-						possible_lines:=[SS1,SS2];
-						// check whether the possible lines are stable for all H
-						answer_temp:=[**];
-						common_stable_lines:=false;
-						for line in possible_lines do
-							flag:=true;
-							v:=Basis(line)[1];
-							for N in gens_pk do
-								w:=v*Transpose(N);
-								if not w in line then
-									flag:=false;
-									break N;
-								end if;
-							end for;
-							if flag then
-								Append(~answer_temp,v);
-								common_stable_lines:=true;
-							end if;
-						end for;
-						if not common_stable_lines then
-							break kt;
-						elif #answer_temp ge 2 then
-						  c:=c+1;
-						end if;
-					else
-					  // case without diagonal generators
-						possible_lines:=[];
-					  VV:=RSpace(Zpk,2);
-						spaces:=[sub<VV|[VV!0]>];
-						for v in VV do
-						  SS:=sub<VV|[v]>;
-							already_considered:=false;
-							for ss in spaces do
-							  if v in ss then
-								  already_considered:=true;
-									break ss;
-								end if;
-							end for;
-							if not(already_considered) then
-							  Append(~spaces,SS);
-							  if (v*Transpose(M)) in SS then
-							    Append(~possible_lines,SS);
-								end if;
-							end if;
-						end for;
-						// check whether the possible lines are stable for all H
-						answer_temp:=[**];
-						common_stable_lines:=false;
-						for line in possible_lines do
-							flag:=true;
-							v:=Basis(line)[1];
-							for N in gens_pk do
-								w:=v*Transpose(N);
-								if not w in line then
-									flag:=false;
-									break N;
-								end if;
-							end for;
-							if flag then
-								Append(~answer_temp,v);
-								common_stable_lines:=true;
-								bad_case:=true;
-							end if;
-						end for;
-						if not common_stable_lines then
-							break kt;
-						elif #answer_temp ge 2 then
-						  c:=c+1;
-						end if;
-					end if;
-				end if;
-			end if;
-		end if;
+          end if;
+        end for;
+        lams_test:=true;
+        // look for the lines that are stable by the chosen generator
+        possible_lines:=[];
+        for lam in lams do
+          Append(~possible_lines,Eigenspace(Transpose(M),lam[1]));
+        end for;
+        // check whether the possible lines are stable for all H
+        answer_temp:=[**];
+        common_stable_lines:=false;
+        for line in possible_lines do
+          flag:=true;
+          v:=Basis(line)[1];
+          for N in gens_pk do
+            w:=v*Transpose(N);
+            if not w in line then
+              flag:=false;
+              break N;
+            end if;
+          end for;
+          if flag then
+            Append(~answer_temp,v);
+            common_stable_lines:=true;
+          end if;
+        end for;
+        if not common_stable_lines then
+          answer:=[**];
+          k:=kt;
+          break kt;
+        elif #answer_temp ge 2 then
+          c:=c+1;
+        end if;
+      else // kt gt 1
+        if lams_test then
+          for gg in gens_pk do
+            if ChangeRing(gg,Zpk_old) eq M_old then
+              M:=gg;
+              break gg;
+            end if;
+          end for;
+          lams_temp:=[];
+          if #lams eq 2 then
+            // lift eigenvalues
+            polM:=CharacteristicPolynomial(M);
+            for lam in lams do
+              if kt eq 2 then
+                lam_temp:=Zpk!(Integers()!(lam[1]));
+              else
+                lam_temp:=Zpk!(Integers()!(lam));
+              end if;
+              Append(~lams_temp,lam_temp-Evaluate(polM,lam_temp)/Evaluate(Derivative(polM),lam_temp));
+            end for;
+            // find eigenvectors
+            possible_lines:=[];
+            for lam in lams_temp do
+              ker_temp:=Kernel(Transpose(Matrix(Zpk,2,2,[M[1,1]-lam,M[1,2],M[2,1],M[2,2]-lam])));
+              if Dimension(ker_temp) gt 0 then
+                Append(~possible_lines,ker_temp);
+              end if;
+            end for;
+            lams:=lams_temp;
+          else // #lams eq 1
+            // find eigenvector
+            possible_lines:=[];
+            v_old:=answer[1];
+            VV:=RSpace(Zpk,2);
+            for x1:=0 to p-1 do
+              v1:=Integers()!(v_old[1])+x1*p^(kt-1);
+              for x2:=0 to p-1 do
+                v2:=Integers()!(v_old[2])+x2*p^(kt-1);
+                v_temp:=VV![v1,v2];
+                SS:=sub<VV|[v_temp]>;
+                w_temp:=v_temp*Transpose(M);
+                if w_temp in SS then
+                  Append(~possible_lines,SS);
+                  break x1;
+                end if;
+              end for;
+            end for;
+          end if;
+          if #possible_lines eq 0 then
+            break kt;
+          end if;
+          // check whether the possible lines are stable for all H
+          answer_temp:=[**];
+          common_stable_lines:=false;
+          for line in possible_lines do
+            flag:=true;
+            v:=Basis(line)[1];
+            for N in gens_pk do
+              w:=v*Transpose(N);
+              if not w in line then
+                flag:=false;
+                break N;
+              end if;
+            end for;
+            if flag then
+              Append(~answer_temp,v);
+              common_stable_lines:=true;
+            end if;
+          end for;
+          if not common_stable_lines then
+            break kt;
+          elif #answer_temp ge 2 then
+            c:=c+1;
+          end if;
+        elif bad_case then
+          // find eigenvectors
+          for gg in gens_pk do
+            if ChangeRing(gg,Zpk_old) eq M_old then
+              M:=gg;
+              break gg;
+            end if;
+          end for;
+          possible_lines:=[];
+          VV:=RSpace(Zpk,2);
+          for vv in answer do
+            v_old:=vv;
+            for x1:=0 to p-1 do
+              v1:=Integers()!(v_old[1])+x1*p^(kt-1);
+              for x2:=0 to p-1 do
+                v2:=Integers()!(v_old[2])+x2*p^(kt-1);
+                v_temp:=VV![v1,v2];
+                SS:=sub<VV|[v_temp]>;
+                w_temp:=v_temp*Transpose(M);
+                if w_temp in SS then
+                  Append(~possible_lines,SS);
+                  break x1;
+                end if;
+              end for;
+            end for;
+          end for;
+          if #possible_lines eq 0 then
+            break kt;
+          end if;
+          // check whether the possible lines are stable for all H
+          answer_temp:=[**];
+          common_stable_lines:=false;
+          for line in possible_lines do
+            flag:=true;
+            v:=Basis(line)[1];
+            for N in gens_pk do
+              w:=v*Transpose(N);
+              if not w in line then
+                flag:=false;
+                break N;
+              end if;
+            end for;
+            if flag then
+              Append(~answer_temp,v);
+              common_stable_lines:=true;
+            end if;
+          end for;
+          if not common_stable_lines then
+            break kt;
+          elif #answer_temp ge 2 then
+            c:=c+1;
+          end if;
+        else // not lams_test and not bad_case
+          // check for a diagonal generator
+          diag_test:=false;
+          for gen in gens_pk do
+            M:=gen;
+            if IsDiagonal(M) then
+              diag_test:=true;
+              break gen;
+            end if;
+          end for;
+          if diag_test then
+            VV:=RSpace(Zpk,2);
+            v_temp:=VV![1,0];
+            SS1:=sub<VV|[v_temp]>;
+            v_temp:=VV![0,1];
+            SS2:=sub<VV|[v_temp]>;
+            possible_lines:=[SS1,SS2];
+            // check whether the possible lines are stable for all H
+            answer_temp:=[**];
+            common_stable_lines:=false;
+            for line in possible_lines do
+              flag:=true;
+              v:=Basis(line)[1];
+              for N in gens_pk do
+                w:=v*Transpose(N);
+                if not w in line then
+                  flag:=false;
+                  break N;
+                end if;
+              end for;
+              if flag then
+                Append(~answer_temp,v);
+                common_stable_lines:=true;
+              end if;
+            end for;
+            if not common_stable_lines then
+              break kt;
+            elif #answer_temp ge 2 then
+              c:=c+1;
+            end if;
+          else
+            // case without diagonal generators
+            possible_lines:=[];
+            VV:=RSpace(Zpk,2);
+            spaces:=[sub<VV|[VV!0]>];
+            for v in VV do
+              SS:=sub<VV|[v]>;
+              already_considered:=false;
+              for ss in spaces do
+                if v in ss then
+                  already_considered:=true;
+                  break ss;
+                end if;
+              end for;
+              if not(already_considered) then
+                Append(~spaces,SS);
+                if (v*Transpose(M)) in SS then
+                  Append(~possible_lines,SS);
+                end if;
+              end if;
+            end for;
+            // check whether the possible lines are stable for all H
+            answer_temp:=[**];
+            common_stable_lines:=false;
+            for line in possible_lines do
+              flag:=true;
+              v:=Basis(line)[1];
+              for N in gens_pk do
+                w:=v*Transpose(N);
+                if not w in line then
+                  flag:=false;
+                  break N;
+                end if;
+              end for;
+              if flag then
+                Append(~answer_temp,v);
+                common_stable_lines:=true;
+                bad_case:=true;
+              end if;
+            end for;
+            if not common_stable_lines then
+              break kt;
+            elif #answer_temp ge 2 then
+              c:=c+1;
+            end if;
+          end if;
+        end if;
+      end if;
+    end if;
     answer:=answer_temp;
-		k:=kt;
-		Zpk_old:=Zpk;
-		M_old:=M;
+    k:=kt;
+    Zpk_old:=Zpk;
+    M_old:=M;
   end for;
   return answer,k,c,two_evs;
 end function;
@@ -508,28 +508,28 @@ Borelize_pk:=function(H,livello)
   // find the matrix to conjugate by. We obtain it from the matrices we stored using Chinese Remainder Theorem 
   m:=IdentityMatrix(ZZ,2);
   prod_ps:=1;
-	CRT2:=[];
+  CRT2:=[];
   for k:=1 to #P_B do
     Append(~CRT2, P_B[k][1]^P_B[k][2]);   
-		prod_ps:=prod_ps*P_B[k][1]^P_B[k][2];
+    prod_ps:=prod_ps*P_B[k][1]^P_B[k][2];
   end for;
-	for k:=1 to #P_O do   
-		Append(~CRT2, P_O[k][1]^P_O[k][2]);   
-		prod_ps:=prod_ps*P_O[k][1]^P_O[k][2]; 
-	end for;
+  for k:=1 to #P_O do   
+    Append(~CRT2, P_O[k][1]^P_O[k][2]);   
+    prod_ps:=prod_ps*P_O[k][1]^P_O[k][2]; 
+  end for;
   for i in [1,2] do
-		for j in [1,2] do
-			CRT1:=[];
-			for k:=1 to #P_B do
-				Append(~CRT1, bad_eigenvecs_B[k][i,j]);
-			end for;
-			for k:=1 to #P_O do
-				Append(~CRT1, bad_eigenvecs_O[k][i,j]);
-			end for;
-			if not #CRT1 eq 0 then
-				m[i,j]:=ChineseRemainderTheorem(CRT1,CRT2);
-			end if;
-		end for;
+    for j in [1,2] do
+      CRT1:=[];
+      for k:=1 to #P_B do
+        Append(~CRT1, bad_eigenvecs_B[k][i,j]);
+      end for;
+      for k:=1 to #P_O do
+        Append(~CRT1, bad_eigenvecs_O[k][i,j]);
+      end for;
+      if not #CRT1 eq 0 then
+        m[i,j]:=ChineseRemainderTheorem(CRT1,CRT2);
+      end if;
+    end for;
   end for;
   // adjusting the determinant and lifting to Z
   m:=ChangeRing(m,Integers(prod_ps));
@@ -558,92 +558,92 @@ reduce_entries:=function(m,livello,bound)
   m22:=Integers()!(m[2,2] mod livello);
   DD:=Determinant(m);
   for k11:=0 to bound do
-	  for k12:=0 to bound do
-		  for k21:=0 to bound do
-			  for k22:=0 to bound do
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21+k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21+k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21-k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21-k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21+k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21+k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21-k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21-k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21+k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21+k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21-k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21-k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21+k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21+k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21-k21*livello,m22+k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			    m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21-k21*livello,m22-k22*livello]);
-			    if Determinant(m_temp) eq DD then
-			      new_m:=m_temp;
-			      break k11;
-			    end if;
-			  end for;
-		  end for;
-	  end for;
+    for k12:=0 to bound do
+      for k21:=0 to bound do
+        for k22:=0 to bound do
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21+k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21+k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21-k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12+k12*livello,m21-k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21+k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21+k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21-k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11+k11*livello,m12-k12*livello,m21-k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21+k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21+k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21-k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12+k12*livello,m21-k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21+k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21+k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21-k21*livello,m22+k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+          m_temp:=Matrix(Integers(),2,2,[m11-k11*livello,m12-k12*livello,m21-k21*livello,m22-k22*livello]);
+          if Determinant(m_temp) eq DD then
+            new_m:=m_temp;
+            break k11;
+          end if;
+        end for;
+      end for;
+    end for;
   end for;
   return new_m;
 end function;
@@ -712,23 +712,23 @@ Grp_str:=function(list,H,livello : isom:=true)
       break xx;
     end if;
   end for;
-	if isom then
-		graph:=[];
-		graphinv:=[];
-		for xx in list do
-			elemtemp:=[];
-			for mm in list do
-				elemtemp:=Append(elemtemp,Index(list,mult(xx,mm,list,H,livello)));
-			end for;
-			graph:=Append(graph,<GMAut!elemtemp,xx>);
-			graphinv:=Append(graphinv,<xx,GMAut!elemtemp>);
-		end for;
-		phi:=map<GMAut->list|graph>;
-		phiinv:=map<list->GMAut|graphinv>;
-		return [*GMAut,phi,phiinv*];
-	else
-	  return [*GMAut*];
-	end if;
+  if isom then
+    graph:=[];
+    graphinv:=[];
+    for xx in list do
+      elemtemp:=[];
+      for mm in list do
+        elemtemp:=Append(elemtemp,Index(list,mult(xx,mm,list,H,livello)));
+      end for;
+      graph:=Append(graph,<GMAut!elemtemp,xx>);
+      graphinv:=Append(graphinv,<xx,GMAut!elemtemp>);
+    end for;
+    phi:=map<GMAut->list|graph>;
+    phiinv:=map<list->GMAut|graphinv>;
+    return [*GMAut,phi,phiinv*];
+  else
+    return [*GMAut*];
+  end if;
 end function;
 
 
@@ -740,21 +740,21 @@ end function;
 
 ModularAUT:=function(H,livello : AL_info:=false, grp_str:=true, grp_isom:=false, reduced_elements:=true, bound:=50) 
   /* 
-	Given a subgroup H in GL_2(Z/livello) it returns the modular automorphisms of Gamma_H\{Upper half plane}, i.e., a list containing a sequence N of representatives for Normalizer_{PGL_2^+(Q)}(Gamma_H)/Gamma_H.
-	A second output is given: a list containing the subgroup S of the symmetric group of #N elements isomorphic as group to N.
+  Given a subgroup H in GL_2(Z/livello) it returns the modular automorphisms of Gamma_H\{Upper half plane}, i.e., a list containing a sequence N of representatives for Normalizer_{PGL_2^+(Q)}(Gamma_H)/Gamma_H.
+  A second output is given: a list containing the subgroup S of the symmetric group of #N elements isomorphic as group to N.
 	
   If  AL_info is true, then the first output is a list containing 3 sequences:
   > normaliz that is the main output as above;
   > ALs that is a sequence of Atkin-Lehner elements of the modular automorphism group of X_H, i.e., representatives for the quotient  Normalizer_{PGL_2^+(Q)}(Gamma_H)/Normalizer_{SL_2^+(Z)}(Gamma_H);
   > lifted_HNelements that is a sequence of the elements of Normalizer_{SL_2^+(Z)}(Gamma_H)/Gamma_H which is equal to N'/H' where H' = H\cap SL_2 and N' is the normalizer of H' in SL_2.
 	
-	If grp_str is false, the second output is not computed and the option grp_isom doesn't matter.
+  If grp_str is false, the second output is not computed and the option grp_isom doesn't matter.
 	
-	If grp_isom is true, there are two more elements in the second output: the second is a bijection from N to S and the third is its inverse.
+  If grp_isom is true, there are two more elements in the second output: the second is a bijection from N to S and the third is its inverse.
 	
-	If reduced_elements is false the elements in N are not reduced meaning that the absolute value of the entries could be higher. Notice that the function to reduce elements is not otpimized and often it can be very expensive in terms of time with respect to the rest of the code.
+  If reduced_elements is false the elements in N are not reduced meaning that the absolute value of the entries could be higher. Notice that the function to reduce elements is not otpimized and often it can be very expensive in terms of time with respect to the rest of the code.
 	
-	The option bound is the positive integer up to search, in absolute value, the entries of the representative matrices in N when reduced_elements is true.
+  The option bound is the positive integer up to search, in absolute value, the entries of the representative matrices in N when reduced_elements is true.
   */
   ZZ:=Integers();
   SL:=SpecialLinearGroup(2,Integers(livello));
@@ -787,36 +787,36 @@ ModularAUT:=function(H,livello : AL_info:=false, grp_str:=true, grp_isom:=false,
       return normaliz;
     end if;
   end if;
-	Dmax:=1;
-	ppB:=1;
-	ppO:=1;
-	for pp in P_C do
-	  Dmax:=Dmax*pp[1]^(Min(pp[2],Valuation(livello,pp[1])-pp[3]));
-	end for;
-	for pp in P_B do
-	  Dmax:=Dmax*pp[1];
-	  ppB:=ppB*pp[1]^pp[2];
-	end for;
-	for pp in P_O do
-	  Dmax:=Dmax*pp[1]^pp[2];
-	  ppO:=ppO*pp[1];
-	end for;
-	Ddiv:=Divisors(Dmax);
-	DD:=[];
-	for dd in Ddiv do
-	  dtemp:=dd;
-	  for pp in P_B do
-		  if Valuation(dd,pp[1]) eq 1 then
-			  dtemp:=dtemp*pp[1]^(pp[2]-1);
-			end if;
-		end for;
-		DD:=Append(DD,dtemp);
-	end for;
+  Dmax:=1;
+  ppB:=1;
+  ppO:=1;
+  for pp in P_C do
+    Dmax:=Dmax*pp[1]^(Min(pp[2],Valuation(livello,pp[1])-pp[3]));
+  end for;
+  for pp in P_B do
+    Dmax:=Dmax*pp[1];
+    ppB:=ppB*pp[1]^pp[2];
+  end for;
+  for pp in P_O do
+    Dmax:=Dmax*pp[1]^pp[2];
+    ppO:=ppO*pp[1];
+  end for;
+  Ddiv:=Divisors(Dmax);
+  DD:=[];
+  for dd in Ddiv do
+    dtemp:=dd;
+    for pp in P_B do
+      if Valuation(dd,pp[1]) eq 1 then
+        dtemp:=dtemp*pp[1]^(pp[2]-1);
+      end if;
+    end for;
+    DD:=Append(DD,dtemp);
+  end for;
 
-	// Normalizer (Step 3: Normalizer in SL2)  
-	HN_bor:=Normalizer(SL,HSL_bor);
+  // Normalizer (Step 3: Normalizer in SL2)  
+  HN_bor:=Normalizer(SL,HSL_bor);
 
-	// we study the orbits of HN_bor on (Z/livello^2)^2, so first we lift HN_bor, then we store representatives for the orbits in Orbs (Step 4: Quotient by N')
+  // we study the orbits of HN_bor on (Z/livello^2)^2, so first we lift HN_bor, then we store representatives for the orbits in Orbs (Step 4: Quotient by N')
   SLnn:=SpecialLinearGroup(2,Integers(livello^2));
   gen_H_Z_bor:=GLn_to_SLZ(H_bor,livello);
   HN_bor_gen:=Generators(HN_bor);
@@ -831,7 +831,7 @@ ModularAUT:=function(H,livello : AL_info:=false, grp_str:=true, grp_isom:=false,
     Append(~Orbs,o[1]);
   end for;
 
-	// (Step 5: Check all possibilities)
+  // (Step 5: Check all possibilities)
   ALs_bor:=[IdentityMatrix(ZZ,2)]; // like ALs but for the borelized version, we will fill it
   for D in DD[2 .. #DD] do // choosing determinat of (a_ij)
     Delta:=GCD(D,ppO*ppB);
@@ -887,36 +887,36 @@ ModularAUT:=function(H,livello : AL_info:=false, grp_str:=true, grp_isom:=false,
   normaliz_temp:=[IdentityMatrix(ZZ,2)];
   for aa in normaliz do
     aa_belongs:=false;
-	  for bb in normaliz_temp do
-	    if check_eq(aa,bb,normaliz,H,livello) then
-	      aa_belongs:=true;
-	      break bb;
-	    end if;
-	  end for;
-	  if not aa_belongs then
-	    Append(~normaliz_temp,aa);
-	  end if;
+    for bb in normaliz_temp do
+      if check_eq(aa,bb,normaliz,H,livello) then
+        aa_belongs:=true;
+        break bb;
+      end if;
+    end for;
+    if not aa_belongs then
+      Append(~normaliz_temp,aa);
+    end if;
   end for;
   normaliz:=normaliz_temp;
 
   // reduce size of representatives' entries (optional)
-	if reduced_elements then
-	  normaliz_red:=[];
-		ALs_red:=[];
-		lifted_HNelements_red:=[];
-	  for mm in normaliz do
-  	  mm_red:=reduce_entries(mm,livello,bound);
-			Append(~normaliz_red,mm_red);
-		  if mm in ALs then
-				Append(~ALs_red,mm_red);
-			elif mm in lifted_HNelements then
-				Append(~lifted_HNelements_red,mm_red);
-			end if;
-		end for;
-	  normaliz:=normaliz_red;
-		ALs:=ALs_red;
-		lifted_HNelements:=lifted_HNelements_red;
-	end if;
+  if reduced_elements then
+    normaliz_red:=[];
+    ALs_red:=[];
+    lifted_HNelements_red:=[IdentityMatrix(ZZ,2)];
+    for mm in normaliz do
+      mm_red:=reduce_entries(mm,livello,bound);
+      Append(~normaliz_red,mm_red);
+      if mm in ALs then
+        Append(~ALs_red,mm_red);
+      elif mm in lifted_HNelements then
+        Append(~lifted_HNelements_red,mm_red);
+      end if;
+    end for;
+    normaliz:=normaliz_red;
+    ALs:=ALs_red;
+    lifted_HNelements:=lifted_HNelements_red;
+  end if;
 
   // output
   if AL_info then
@@ -924,12 +924,12 @@ ModularAUT:=function(H,livello : AL_info:=false, grp_str:=true, grp_isom:=false,
   else
     output1:=[*normaliz*];
   end if;
-	if grp_str then
-	  output2:=Grp_str(normaliz,H,livello : isom:=grp_isom);
-		return output1,output2;
-	else
-	  return output1;
-	end if;
+  if grp_str then
+    output2:=Grp_str(normaliz,H,livello : isom:=grp_isom);
+    return output1,output2;
+  else
+    return output1;
+  end if;
 end function;
 
 
