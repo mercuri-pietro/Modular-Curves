@@ -1,0 +1,53 @@
+
+
+SumDigits := function(number_l, modulus_l) // write number_l in base modulus_l and return the sum of its digits.
+    change_number_l := number_l;
+    risposta := 0;
+    while change_number_l ge modulus_l do
+        new_digit_l := change_number_l mod modulus_l;
+        change_number_l := (change_number_l - new_digit_l) div modulus_l;
+        risposta := risposta + new_digit_l;
+    end while;
+    risposta := risposta + change_number_l;
+    return risposta;
+end function;
+
+GonzTest_oneo := function(genus, order_aut, list_points, Q, up_to)
+    // This function computes the two quantities Somma and Bound that are present in Theorem 2.1 in Gonzales' paper for a curve of genus "genus". In Gonzales paper Somma is an infinite sum, here we compute it up to the index "up_to". If Somma>Bound we deduce that the curve has no automorphism of order "order_aut" over the finite field F_Q. If Bound<Somma then we write "The curve may have automorphisms of order order_aut". We suppose that order_aut is the power of a prime. The input "list_points" is a list of the number of points of the curve over F_(Q^j) for j=1,...,up_to.
+    list_A_n := [];
+    for i in [1 .. up_to] do
+        new_points := 0;
+        divi := Divisors(i);
+        for d in divi do
+            new_points +:= MoebiusMu(d)*list_points[(i div d)];
+        end for;
+        list_A_n := Append(list_A_n, new_points);
+    end for;
+    prime_aut:=PrimeDivisors(order_aut)[1];
+    Somma := 0;
+    for i in [1 .. up_to] do
+        Ln:=order_aut div GCD(order_aut,i);
+        Pn:=(list_A_n[i] div i) mod Ln;
+        Dn:=SumDigits(Pn,prime_aut);
+        Somma +:= i*(Ln*Dn-Pn);
+    end for;
+    BoundGonz := 2*genus + 2*order_aut-2;
+    if Somma gt BoundGonz then
+        print "The curve does NOT have automorphisms of order ",order_aut;
+        return "I am happy";
+    else
+        print "The curve may have automorphisms of order ",order_aut;
+        return "Are you happy?";
+    end if;
+end function;
+
+
+genus:=16;
+q:=5;
+punti:=[ 6, 88, 114, 872, 3246, 15754, 78294, 381992, 1944906, 9772728, 48876174, 244260434, 1220662566, 6103356088, 30516710754, 152588352872, 762944175726, 3814682714842, 19073476908534, 95367511932073, 476837163571386, 2384185275289048, 11920928969896014, 59604648379099003, 298023223217279046, 1490116115611955606, 7450580600997562194, 37252902914164124236, 186264514941334108206, 931322574583219758186, 4656612872802476183574, 23283064368503109405066, 116415321827370947128354, 582076609128367653047858, 2910383045682104362477436, 14551915228317814737224924, 72759576141770402228538166, 363797880709270958197646480, 1818989403545991695674999958, 9094947017730012455203691155 ];
+prec:=40;
+GonzTest_oneo(genus,3,punti,q,prec);
+GonzTest_oneo(genus,4,punti,q,prec);
+GonzTest_oneo(genus,5,punti,q,prec);
+
+
