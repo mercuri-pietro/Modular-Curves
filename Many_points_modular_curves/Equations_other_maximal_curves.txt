@@ -1,0 +1,381 @@
+
+
+
+equations:=function(n,genere,coefprec:AL:=[])
+  //This function gives equations for the canonical model (only generic case for genus at least 3) of a curve X_0(n), for the computations are used coefprec Fourier coefficients.
+  //The integer genere is the genus of the curve.
+  //The sequence AL indicates the maximal divisors corresponding to the generators of Atkin-Lehner involution subgroup we are considering. An empty list corresponds to X_0(n).
+
+  // setup
+  QQ:=RationalField();
+  ZZ:=IntegerRing();
+  QR<q>:=PowerSeriesRing(QQ);
+  M0:=ModularForms(Gamma0(n),2);
+  M0c:=CuspidalSubspace(M0);
+  BB:=Basis(M0c);
+  if #AL eq 0 then
+    finvamin:=BB;
+  else
+    SetPrecision(M0c,coefprec);
+    fflistold:=BB;
+    for dd in AL do
+      fflistnew:=[];
+      for ff in fflistold do
+        Append(~fflistnew,QR!ff+AtkinLehnerOperator(dd,ff));
+      end for;
+      fflistold:=fflistnew;
+    end for;
+    finvamin:=fflistnew;
+  end if;
+
+
+
+  ////////////////////////////////////////
+
+
+  // prettifying cusp form basis
+
+  // matrix of the integer coordinates of Fourier coefficients
+  if #AL eq 0 then
+    mcoint:=ZeroMatrix(ZZ,genere,coefprec-1);
+    for ss:=1 to genere do
+      for nn:=1 to coefprec-1 do
+        mcoint[ss,nn]:=Coefficient(finvamin[ss],nn);
+      end for;
+    end for;
+  else
+    for ss:=1 to #BB do
+      dens:=[];
+      for nn:=1 to coefprec-1 do
+        den:=Denominator(Coefficient(finvamin[ss],nn));
+        Append(~dens,den);
+      end for;
+      mcm:=LCM(dens);
+      if mcm ne 1 then
+        finvamin[ss]:=mcm*finvamin[ss];
+      end if;
+    end for;
+    mcoint:=ZeroMatrix(ZZ,#BB,coefprec-1);
+    for ss:=1 to #BB do
+      for nn:=1 to coefprec-1 do
+        mcoint[ss,nn]:=Coefficient(finvamin[ss],nn);
+      end for;
+    end for;
+    mcoint:=RowSubmatrix(EchelonForm(mcoint),genere);
+  end if;
+
+  // find and eliminate bad primes
+  mcointnobadp:=mcoint;
+  Mprettifying:=IdentityMatrix(QQ,genere);
+  badp:=[];
+  chk:=true;
+  while chk do
+    testcol:=[];
+    jj:=1;
+    while jj le genere do
+      rnd:=Random(1,(coefprec-1));
+      if not(rnd in testcol) then
+        testcol:=Append(testcol,rnd);
+        jj:=jj+1;
+      end if;
+    end while;
+    testcol:=Sort(testcol);
+    testmatrix:=Submatrix(mcoint,[1..genere],testcol);
+    dettest:=Determinant(testmatrix);
+    if dettest ne 0 then
+      chk:=false;
+    end if;
+  end while;
+  fac:=Factorization(dettest);
+  if #fac gt 0 then
+    for el in fac do
+      badp:=Append(badp,el[1]);
+    end for;
+  end if;
+  for ell in badp do
+    FFell:=FiniteField(ell);
+    matmodell:=ZeroMatrix(FFell,NumberOfRows(mcointnobadp),NumberOfColumns(mcointnobadp));
+    for ii:=1 to NumberOfRows(matmodell) do
+      for jj:=1 to NumberOfColumns(matmodell) do
+        matmodell[ii,jj]:=FFell!mcointnobadp[ii,jj];
+      end for;
+    end for;
+    rk:=Rank(matmodell);
+    if (rk lt genere) then
+      while (rk lt genere) do
+        kermod:=KernelMatrix(matmodell);
+        rowstochange:=[];
+        for ii:=1 to NumberOfRows(kermod) do
+          for jj:=1 to NumberOfColumns(kermod) do
+            if kermod[ii,jj] eq ell-1 then
+              rowstochange:=Append(rowstochange,jj);
+              break jj;
+            end if;
+          end for;
+        end for;
+        kermodlift:=ZeroMatrix(ZZ,NumberOfRows(kermod),NumberOfColumns(kermod));
+        for ii:=1 to NumberOfRows(kermodlift) do
+          for jj:=1 to NumberOfColumns(kermodlift) do
+            kermodlift[ii,jj]:=ZZ!kermod[ii,jj];
+            if (kermodlift[ii,jj] gt ((ell-1)/2)) then
+              kermodlift[ii,jj]:=kermodlift[ii,jj]-ell;
+            end if;
+          end for;
+        end for;
+        mtemp:=kermodlift*mcointnobadp;
+        for ii:=1 to NumberOfRows(mtemp) do
+          for jj:=1 to NumberOfColumns(mtemp) do
+            mtemp[ii,jj]:=mtemp[ii,jj]/ell;
+          end for;
+        end for;
+        for ii:=1 to #rowstochange do
+          mcointnobadp[rowstochange[ii]]:=mtemp[ii];
+        end for;
+        mell:=IdentityMatrix(QQ,genere);
+        for jj:=1 to NumberOfColumns(mell) do
+          mell[1,jj]:=kermodlift[1,jj]/ell;
+        end for;
+        Mprettifying:=mell*Mprettifying;
+        matmodell:=ZeroMatrix(FFell,NumberOfRows(mcointnobadp),NumberOfColumns(mcointnobadp));
+        for ii:=1 to NumberOfRows(matmodell) do
+          for jj:=1 to NumberOfColumns(matmodell) do
+            matmodell[ii,jj]:=FFell!mcointnobadp[ii,jj];
+          end for;
+        end for;
+        rk:=Rank(matmodell);
+      end while;
+    end if;
+  end for;
+
+  // LLL
+  mcolll,mllltrasf:=LLL(mcointnobadp);
+  Mprettifying:=ChangeRing(mllltrasf,QQ)*Mprettifying;
+
+  // back to q-expansions
+  fqpretty:=[];
+  for ii:=1 to genere do
+    fqpretty:=Append(fqpretty,O(q^coefprec));
+  end for;
+  for ss:=1 to genere do
+    for nn:=1 to coefprec-1 do
+      fqpretty[ss]:=fqpretty[ss]+mcolll[ss,nn]*q^nn;
+    end for;
+  end for;
+
+
+  /////////////////////////////////////
+
+
+  // equations
+  if genere eq 3 then
+    numdeg4:=Binomial(genere+3,4);
+    deg4:=[];
+    for i1:=1 to genere do
+      for i2:=i1 to genere do
+        for i3:=i2 to genere do
+          for i4:=i3 to genere do
+            deg4:=Append(deg4,fqpretty[i1]*fqpretty[i2]*fqpretty[i3]*fqpretty[i4]);
+          end for;
+        end for;
+      end for;
+    end for;
+    mmint:=ZeroMatrix(ZZ,numdeg4,coefprec-1);
+    for ss:=1 to numdeg4 do
+      for nn:=1 to coefprec-1 do
+        mmint[ss,nn]:=Coefficient(deg4[ss],nn);
+      end for;
+    end for;
+    kerint:=KernelMatrix(mmint);
+    if not(NumberOfRows(kerint) eq 1) then
+      print "Error! The number of quartic equations found is wrong!";
+      print "It is",NumberOfRows(kerint);
+      print "It must be",1;
+    else
+      ER<x,y,z>:=PolynomialRing(QQ,genere);
+      mon4:=[];
+      for i1:=1 to genere do
+        for i2:=i1 to genere do
+          for i3:=i2 to genere do
+            for i4:=i3 to genere do
+              mon4:=Append(mon4,ER.i1*ER.i2*ER.i3*ER.i4);
+            end for;
+          end for;
+        end for;
+      end for;
+      coefeq:=kerint;
+      equations:=[ER|];
+      for ss:=1 to NumberOfRows(kerint) do
+        equations:=Append(equations,0);
+      end for;
+      for ss:=1 to NumberOfRows(kerint) do
+        for kk:=1 to numdeg4 do
+          equations[ss]:=equations[ss]+coefeq[ss][kk]*mon4[kk];
+        end for;
+      end for;
+    end if;
+
+  elif genere eq 4 then
+    numdeg2:=Binomial(genere+1,2);
+    deg2:=[];
+    for i1:=1 to genere do
+      for i2:=i1 to genere do
+        deg2:=Append(deg2,fqpretty[i1]*fqpretty[i2]);
+      end for;
+    end for;
+    mmint:=ZeroMatrix(ZZ,numdeg2,coefprec-1);
+    for ss:=1 to numdeg2 do
+      for nn:=1 to coefprec-1 do
+        mmint[ss,nn]:=Coefficient(deg2[ss],nn);
+      end for;
+    end for;
+    kerint2:=KernelMatrix(mmint);
+    numdeg3:=Binomial(genere+2,3);
+    deg3:=[];
+    for i1:=1 to genere do
+      for i2:=i1 to genere do
+        for i3:=i2 to genere do
+          deg3:=Append(deg3,fqpretty[i1]*fqpretty[i2]*fqpretty[i3]);
+        end for;
+      end for;
+    end for;
+    mmint:=ZeroMatrix(ZZ,numdeg3,coefprec-1);
+    for ss:=1 to numdeg3 do
+      for nn:=1 to coefprec-1 do
+        mmint[ss,nn]:=Coefficient(deg3[ss],nn);
+      end for;
+    end for;
+    kerint3:=KernelMatrix(mmint);
+    ER<[x]>:=PolynomialRing(QQ,genere);
+    equations:=[ER|];
+    if not(NumberOfRows(kerint2) eq 1) then
+      print "Attention! The number of quadratic equations found is wrong!";
+      print "It is",NumberOfRows(kerint2);
+      print "It must be",1;
+    end if;
+    if (NumberOfRows(kerint2) ge 1) then
+      mon2:=[];
+      for i1:=1 to genere do
+        for i2:=i1 to genere do
+          mon2:=Append(mon2,ER.i1*ER.i2);
+        end for;
+      end for;
+      coefeq:=kerint2;
+      equations2:=[ER|];
+      for ss:=1 to NumberOfRows(kerint2) do
+        equations2:=Append(equations2,0);
+      end for;
+      for ss:=1 to NumberOfRows(kerint2) do
+        for kk:=1 to numdeg2 do
+          equations2[ss]:=equations2[ss]+coefeq[ss][kk]*mon2[kk];
+        end for;
+      end for;
+      count2:=0;
+      for kk:=1 to #equations2 do
+        count2:=count2+1;
+        equations:=Append(equations,equations2[kk]);
+      end for;
+    end if;
+    mon3:=[];
+    for i1:=1 to genere do
+      for i2:=i1 to genere do
+        for i3:=i2 to genere do
+          mon3:=Append(mon3,ER.i1*ER.i2*ER.i3);
+        end for;
+      end for;
+    end for;
+    coefeq:=kerint3;
+    equations3:=[ER|];
+    for ss:=1 to NumberOfRows(kerint3) do
+      equations3:=Append(equations3,0);
+    end for;
+    for ss:=1 to NumberOfRows(kerint3) do
+      for kk:=1 to numdeg3 do
+        equations3[ss]:=equations3[ss]+coefeq[ss][kk]*mon3[kk];
+      end for;
+    end for;
+    count3:=0;
+    for kk:=1 to #equations3 do
+      if IsIrreducible(equations3[kk]) then
+        count3:=count3+1;
+        equations:=Append(equations,equations3[kk]);
+      end if;
+    end for;
+    if not(count3 eq 1) then
+      print "Attention! The number of cubic equations found is wrong!";
+      print "It is",count3;
+      print "It must be",1;
+    end if;
+
+  elif genere ge 5 then
+    eqnum:=Binomial(genere-2,2);
+    numdeg2:=Binomial(genere+1,2);
+    deg2:=[];
+    for i1:=1 to genere do
+      for i2:=i1 to genere do
+        deg2:=Append(deg2,fqpretty[i1]*fqpretty[i2]);
+      end for;
+    end for;
+    mmint:=ZeroMatrix(ZZ,numdeg2,coefprec-1);
+    for ss:=1 to numdeg2 do
+      for nn:=1 to coefprec-1 do
+        mmint[ss,nn]:=Coefficient(deg2[ss],nn);
+      end for;
+    end for;
+    kerint:=KernelMatrix(mmint);
+    if not(NumberOfRows(kerint) eq eqnum) then
+      print "Attention! The number of quadratic equations found is wrong!";
+      print "It is",NumberOfRows(kerint);
+      print "It must be",eqnum;
+    end if;
+    if (NumberOfRows(kerint) ge eqnum) then
+      ER<[x]>:=PolynomialRing(QQ,genere);
+      mon2:=[];
+      for i1:=1 to genere do
+        for i2:=i1 to genere do
+          mon2:=Append(mon2,ER.i1*ER.i2);
+        end for;
+      end for;
+      coefeq:=kerint;
+      equations:=[ER|];
+      for ss:=1 to NumberOfRows(kerint) do
+        equations:=Append(equations,0);
+      end for;
+      for ss:=1 to NumberOfRows(kerint) do
+        for kk:=1 to numdeg2 do
+          equations[ss]:=equations[ss]+coefeq[ss][kk]*mon2[kk];
+        end for;
+      end for;
+    end if;
+
+  else
+    print "The genus is",genere;
+    print "The genus must be at least 3";
+  end if;
+  return equations;
+
+end function;
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+print "Equations of X_0(81):";
+equations(81,4,51);
+print "";
+
+print "Equations of X_0(251)/w_251:";
+equations(251,4,51:AL:=[251]);
+print "You can pick one of the cubic at your choice";
+print "";
+
+print "Equations of X_0(177)/w_59:";
+equations(177,4,51:AL:=[59]);
+print "You can pick one of the cubic at your choice";
+print "";
+
+print "Equations of X_0(299)/w_299:";
+equations(299,6,51:AL:=[299]);
+print "";
+
