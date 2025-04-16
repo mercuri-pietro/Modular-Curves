@@ -367,12 +367,12 @@ print "";
 
 print "Equations of X_0(251)/w_251:";
 equations(251,4,51:AL:=[251]);
-print "You can pick one of the cubic at your choice";
+print "You can pick the quadric together with one of the cubic at your choice: with any choice you will obtain curves in the same isomorphism class.";
 print "";
 
 print "Equations of X_0(177)/w_59:";
 equations(177,4,51:AL:=[59]);
-print "You can pick one of the cubic at your choice";
+print "You can pick the quadric together with one of the cubic at your choice: with any choice you will obtain curves in the same isomorphism class.";
 print "";
 
 print "Equations of X_0(299)/w_299:";
